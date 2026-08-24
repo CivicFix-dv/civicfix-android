@@ -21,7 +21,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm install
-          npm install typescript @capacitor/android @capacitor/core @capacitor/cli
+          npm install -D typescript ts-node @types/node
 
       - name: Build web assets
         run: npm run build
@@ -38,8 +38,8 @@ jobs:
           distribution: 'temurin'
 
       - name: Build Android Debug APK
-        working-directory: android
         run: |
+          cd android
           chmod +x gradlew
           ./gradlew assembleDebug --stacktrace
 
