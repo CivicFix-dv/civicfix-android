@@ -1,0 +1,6 @@
+{
+  "appId": "com.civicfix.app",
+  "appName": "CivicFix",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}
