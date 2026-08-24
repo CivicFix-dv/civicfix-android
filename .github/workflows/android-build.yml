@@ -19,15 +19,14 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: |
-          npm install
-          npm install -D typescript ts-node @types/node
+        run: npm install
 
       - name: Build web assets
         run: npm run build
 
       - name: Add and Sync Android Platform
         run: |
+          npm install @capacitor/core @capacitor/cli @capacitor/android
           npx cap add android || true
           npx cap sync android
 
