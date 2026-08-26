@@ -368,35 +368,47 @@ map.on('click', (e) => {
     }
   }, [value.lat, value.lng]);
 
-  const useMyLocation = () => {
+ const useMyLocation = () => {
     setGeoError("");
+    setLocating(true);
+
     if (!navigator.geolocation) {
-      setGeoError("Geolocation not supported on this device.");
+      setGeoError("GPS hardware is not supported.");
+      setLocating(false);
       return;
     }
-    setLocating(true);
+
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
-        const { latitude, longitude } = pos.coords;
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        
         if (mapObj.current) {
-          mapObj.current.setView([latitude, longitude], 16);
+          mapObj.current.setView([lat, lng], 17);
         }
         if (markerObj.current) {
-          markerObj.current.setLatLng([latitude, longitude]);
+          markerObj.current.setLatLng([lat, lng]);
           markerObj.current.setOpacity(1);
         }
-        onChange((v) => ({ ...v, lat: latitude, lng: longitude }));
-        const addr = await reverseGeocode(latitude, longitude);
-        onChange((v) => ({ ...v, lat: latitude, lng: longitude, address: addr || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` }));
+        
+        onChange((v) => ({ ...v, lat, lng }));
+        const addr = await reverseGeocode(lat, lng);
+        onChange((v) => ({ ...v, lat, lng, address: addr || `${lat.toFixed(5)}, ${lng.toFixed(5)}` }));
         setLocating(false);
       },
       (err) => {
-        console.error("GPS Error:", err);
-        setGeoError("Location access unavailable. Please tap map to pin manually.");
+        console.warn("GPS Error:", err);
+        const fallbackLat = 24.8607;
+        const fallbackLng = 67.0011;
+        if (mapObj.current) {
+          mapObj.current.setView([fallbackLat, fallbackLng], 15);
+        }
+        setGeoError("Location access allow karein ya map par tap karke pin set karein.");
         setLocating(false);
       },
-      { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 }
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
+  };
   };
     );
   };
