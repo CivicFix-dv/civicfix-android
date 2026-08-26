@@ -3,7 +3,7 @@
 // .env (see .env.example) before building — without it, every call below
 // will fail against a relative "/api/..." path with no server behind it.
 
-const BASE = import.meta.env.VITE_API_BASE_URL || "";
+const BASE = "https://civicfix-backend-8gk6.onrender.com";
 
 class ApiError extends Error {
   constructor(message, status) {
