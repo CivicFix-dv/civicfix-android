@@ -329,7 +329,10 @@ const map = L.map(mapRef.current, { zoomControl: true }).setView(start, value.la
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19,
     }).addTo(map);
+    mapObj.current = map;
+    setTimeout(() => { map.invalidateSize(); }, 300);
     const marker = L.marker(start, { draggable: true }).addTo(map);
+    markerObj.current = marker;
     if (!value.lat) marker.setOpacity(0.001);
 map.on('click', (e) => {
       const { lat, lng } = e.latlng;
@@ -350,12 +353,7 @@ map.on('click', (e) => {
       onChange((v) => ({ ...v, lat, lng, address: addr || v.address || `${lat.toFixed(5)}, ${lng.toFixed(5)}` }));
     };
 
-    map.on("click", (e) => applyLatLng(e.latlng.lat, e.latlng.lng));
-    marker.on("dragend", () => {
-      const p = marker.getLatLng();
-      applyLatLng(p.lat, p.lng);
-    });
-
+    
     mapObj.current = map;
     markerObj.current = marker;
     setTimeout(() => map.invalidateSize(), 200);
@@ -380,16 +378,26 @@ map.on('click', (e) => {
     navigator.geolocation.getCurrentPosition(
       async (pos) => {
         const { latitude, longitude } = pos.coords;
+        if (mapObj.current) {
+          mapObj.current.setView([latitude, longitude], 16);
+        }
+        if (markerObj.current) {
+          markerObj.current.setLatLng([latitude, longitude]);
+          markerObj.current.setOpacity(1);
+        }
         onChange((v) => ({ ...v, lat: latitude, lng: longitude }));
         const addr = await reverseGeocode(latitude, longitude);
         onChange((v) => ({ ...v, lat: latitude, lng: longitude, address: addr || `${latitude.toFixed(5)}, ${longitude.toFixed(5)}` }));
         setLocating(false);
       },
-      () => {
-        setGeoError("Could not fetch location. Please tap the map to pin manually.");
+      (err) => {
+        console.error("GPS Error:", err);
+        setGeoError("Location access unavailable. Please tap map to pin manually.");
         setLocating(false);
       },
-      { enableHighAccuracy: true, timeout: 8000 }
+      { enableHighAccuracy: false, timeout: 12000, maximumAge: 60000 }
+    );
+  };
     );
   };
 
