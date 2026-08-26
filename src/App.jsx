@@ -322,15 +322,26 @@ function MapPicker({ value, onChange, T_ }) {
 
   useEffect(() => {
     if (!ready || !mapRef.current || mapObj.current) return;
-    const start = value.lat ? [value.lat, value.lng] : PK_CENTER;
-    const map = L.map(mapRef.current, { zoomControl: true }).setView(start, value.lat ? 16 : 5);
+   const KARACHI_CENTER = [24.8607, 67.0011];
+const start = value.lat ? [value.lat, value.lng] : KARACHI_CENTER;
+const map = L.map(mapRef.current, { zoomControl: true }).setView(start, value.lat ? 16 : 13);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "&copy; OpenStreetMap contributors",
       maxZoom: 19,
     }).addTo(map);
     const marker = L.marker(start, { draggable: true }).addTo(map);
     if (!value.lat) marker.setOpacity(0.001);
+map.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+      marker.setLatLng([lat, lng]);
+      marker.setOpacity(1);
+      applyLatLng(lat, lng);
+    });
 
+    marker.on('dragend', () => {
+      const pos = marker.getLatLng();
+      applyLatLng(pos.lat, pos.lng);
+    });
     const applyLatLng = async (lat, lng) => {
       marker.setLatLng([lat, lng]);
       marker.setOpacity(1);
